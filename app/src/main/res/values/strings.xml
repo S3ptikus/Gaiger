@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Гейгер</string>
+    <string name="editNameText">Имя сталкера</string>
+    <string name="btnLoginText">Войти</string>
+    <string name="stalkerName">StalkerName</string>
+    <string name="stalkerClass">StalkerClass</string>
+    <string name="sharedPrefFileName">sharedPrefFile</string>
+    <string name="statusStart">Состояние</string>
+
+    <string name="statusLife">Здоров</string>
+    <string name="statusIll">Облучен</string>
+    <string name="statusDead">Мертв</string>
+
+</resources>
