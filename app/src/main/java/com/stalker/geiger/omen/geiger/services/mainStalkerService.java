@@ -59,7 +59,6 @@ public class mainStalkerService extends IntentService {
             mainTask();
         } else {
             isRunning = false;
-            return;
         }
     }
 
@@ -77,20 +76,16 @@ public class mainStalkerService extends IntentService {
     private void mainTask(){
         Log.d(TAG, "mainTask");
         ScanResult zone;
-        double getRadHour = 0;
+        double getRadHour;
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(StalkerActivity.MyStalkerReciever.PROCESS_RESPONSE_COUNT_RAD);
         broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
 
         while (isRunning){
             try {
-                //TODO Wifi block and RAD count
                 zone = wifiLogic.getWifiZone();
                 // добавление звука при входе в зону
-                if (zone != null)
-                    isVibrate = true;
-                else
-                    isVibrate = false;
+                isVibrate = (zone != null);
 
                 getRadHour = wifiLogic.getRadHour(zone);
                 getRadHour = getRndRadCount(getRadHour);
@@ -113,13 +108,11 @@ public class mainStalkerService extends IntentService {
 
     private double getRndRadCount(double pCount){
         Random rand = new Random();
-        double randomNum = rand.nextInt((50 - 0) + 1)/100f;
+        double randomNum = rand.nextInt((50) + 1)/100f;
         if (System.nanoTime()%2 == 0)
             return Math.abs(pCount + randomNum);
-            //return new DecimalFormat(formatRad).format (Math.abs(pCount + randomNum));
          else
             return Math.abs(pCount - randomNum);
-            //return new DecimalFormat(formatRad).format (Math.abs(pCount - randomNum));
     }
 
     private void setNotification(String pMsg){
