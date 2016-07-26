@@ -23,7 +23,8 @@
         <activity
             android:name=".LoginActivity"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
-        <activity android:name=".StalkerActivity" />
+        <activity android:name=".StalkerActivity"
+                  android:screenOrientation="portrait"/>
 
         <service
             android:name=".services.mainStalkerService"

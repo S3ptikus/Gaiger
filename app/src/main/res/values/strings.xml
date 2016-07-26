@@ -9,6 +9,7 @@
 
     <string name="statusLife">Здоров</string>
     <string name="statusIll">Облучен</string>
+    <string name="statusRadSick">Лучевая болезнь</string>
     <string name="statusDead">Мертв</string>
 
 </resources>

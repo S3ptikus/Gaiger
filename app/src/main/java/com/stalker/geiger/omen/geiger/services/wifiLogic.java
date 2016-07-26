@@ -22,7 +22,7 @@ public class wifiLogic {
         if (wifi.isWifiEnabled() == false)
         {
             // If wifi disabled then enable it
-            Toast.makeText(pCntx.getApplicationContext(), "wifi is disabled..making it enabled", Toast.LENGTH_LONG).show();
+            //Toast.makeText(pCntx.getApplicationContext(), "wifi is disabled..making it enabled", Toast.LENGTH_LONG).show();
             wifi.setWifiEnabled(true);
         }
     }

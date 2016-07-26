@@ -7,7 +7,6 @@ import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 
 import java.io.Serializable;
-import java.io.StringWriter;
 
 /**
  * Created by omen on 19.07.2016.
@@ -37,16 +36,24 @@ public class StalkerClass implements Serializable {
 
     public void add_rad(double pCount){
         _countRad += pCount;
+        if (_countRad > 400)
+            _countRad = 400;
+        CheckStatus();
     }
 
-    public void set_countRad(double _countRad) {
-        this._countRad = _countRad;
-
+    private void CheckStatus() {
         // 10-20 чутка
         // 150 - лучевая болезнь
         // 400 - смерть
-
-
+        if (this._countRad <= 20){
+            this.set_status(StatusLife.LIFE);
+        }else if ((this._countRad > 20) && (this._countRad <= 150)) {
+            this.set_status(StatusLife.ILL);
+        }else if ((this._countRad > 150) && (this._countRad <= 400)) {
+            this.set_status(StatusLife.RADSIC);
+        }else if (this._countRad >= 400){
+            this.set_status(StatusLife.DEAD);
+        }
     }
 
     public String get_status(Context pCntx) {
@@ -55,6 +62,8 @@ public class StalkerClass implements Serializable {
                 return pCntx.getString(R.string.statusStart) + " - " + pCntx.getString(R.string.statusLife);
             case ILL:
                 return pCntx.getString(R.string.statusStart) + " - " + pCntx.getString(R.string.statusIll);
+            case RADSIC:
+                return pCntx.getString(R.string.statusStart) + " - " + pCntx.getString(R.string.statusRadSick);
             case DEAD:
                 return pCntx.getString(R.string.statusStart) + " - " + pCntx.getString(R.string.statusDead);
             default:
@@ -82,5 +91,17 @@ public class StalkerClass implements Serializable {
         SharedPreferences.Editor ed = sharedPref.edit();
         ed.putString(pCntx.getString(R.string.stalkerClass), this.getJSON());
         ed.commit();
+    }
+
+    public static StalkerClass getStalkerState(Context pCntx){
+        SharedPreferences sharedPref = pCntx.getSharedPreferences(pCntx.getString(R.string.sharedPrefFileName), pCntx.MODE_PRIVATE);
+        String json = sharedPref.getString(pCntx.getString(R.string.stalkerClass),"");
+        // если первый раз, то класса не будет
+        if (json == ""){
+            return null;
+        } else {
+            Gson g = new Gson();
+            return g.fromJson(json, StalkerClass.class);
+        }
     }
 }

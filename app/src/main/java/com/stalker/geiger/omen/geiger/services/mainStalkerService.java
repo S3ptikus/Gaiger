@@ -6,6 +6,9 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -15,6 +18,7 @@ import com.stalker.geiger.omen.geiger.R;
 import com.stalker.geiger.omen.geiger.StalkerActivity;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
 
+import java.io.File;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -32,6 +36,7 @@ public class mainStalkerService extends IntentService {
     private wifiLogic wifiLogic;
     private NotificationManager nManager;
     private final int NOTIFICATION_ID = 12345;
+    private boolean isVibrate = false;
 
     public static final String RESPONSE_STRING_RAD_COUNT = "myResponseRadCount";
     public static final String RESPONSE_STRING_STALKER_RAD_COUNT = "myResponseStalkerRadCount";
@@ -81,20 +86,13 @@ public class mainStalkerService extends IntentService {
             try {
                 //TODO Wifi block and RAD count
                 zone = wifiLogic.getWifiZone();
+                // добавление звука при входе в зону
+                if (zone != null)
+                    isVibrate = true;
+                else
+                    isVibrate = false;
 
                 getRadHour = wifiLogic.getRadHour(zone);
-
-//                if (zone != null){
-//                    // Уведомление
-//                    abstractDist = wifiLogic.getLevel(zone);
-//
-//
-//                    isStalkerChange = true;
-//                }else {
-//                    getRadHour = 0;
-//                    isStalkerChange = false;
-//                    clearNotification();
-//                }
                 getRadHour = getRndRadCount(getRadHour);
                 // Добавляем кол-во радов сталкеру. За одну секунду
                 stalker.add_rad(getRadHour / 120);
@@ -103,7 +101,7 @@ public class mainStalkerService extends IntentService {
                 setNotification("RadCount - " + formatRadString);
                 // Отправляем в активити
 
-                broadcastIntent.putExtra(RESPONSE_STRING_RAD_COUNT, formatRadString + ":" + stalker.get_countRadForProgressbar());
+                broadcastIntent.putExtra(RESPONSE_STRING_RAD_COUNT, formatRadString);
                 sendBroadcast(broadcastIntent);
 
                 Thread.sleep(loopTime);
@@ -127,10 +125,15 @@ public class mainStalkerService extends IntentService {
     private void setNotification(String pMsg){
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_stalker_launcher)
                         .setContentTitle("Уровень радиации")
-                        //.setVibrate(new long[] {100,100})
+                        .setAutoCancel(true)
                         .setContentText(pMsg);
+
+        if (isVibrate){
+            builder.setVibrate(new long[]{100, 100, 100});
+        }
+
         Intent targetIntent = new Intent(this, StalkerActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);

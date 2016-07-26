@@ -75,7 +75,7 @@ public class StalkerActivity extends AppCompatActivity {
         // Регистрируем ресивер
         filter = new IntentFilter(MyStalkerReciever.PROCESS_RESPONSE_COUNT_RAD);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
-        receiver = new MyStalkerReciever();
+        receiver = new MyStalkerReciever(this);
         registerReceiver(receiver, filter);
 
         String json = sharedPref.getString(getString(R.string.stalkerClass),"");
@@ -105,6 +105,7 @@ public class StalkerActivity extends AppCompatActivity {
         textViewStalkerName.setText(stalker.get_name());
         progressBarLife.setProgress(stalker.get_countRadForProgressbar());
         textViewStatusLife.setText(stalker.get_status(this));
+        textViewStalkerRad.setText(new DecimalFormat("000.00").format(stalker.get_countRad()) + " рад");
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -138,15 +139,28 @@ public class StalkerActivity extends AppCompatActivity {
 
     public class MyStalkerReciever extends BroadcastReceiver{
 
+        private Context cntx;
+
         public static final String PROCESS_RESPONSE_COUNT_RAD = "com.stalker.geiger.omen.geiger.intent.action.PROCESS_RESPONSE_COUNT_RAD";
+
+        public MyStalkerReciever(Context pCtnx) {
+            super();
+            cntx = pCtnx;
+        }
 
         @Override
         public void onReceive(Context context, Intent intent) {
             String responseString = intent.getStringExtra(mainStalkerService.RESPONSE_STRING_RAD_COUNT);
             TextView myTextView = (TextView) findViewById(R.id.textViewRadCount);
-            myTextView.setText(responseString.split(":")[0]);
-            progressBarLife.setProgress(Integer.decode(responseString.split(":")[1]));
-            textViewStalkerRad.setText((Integer.decode(responseString.split(":")[1]) * 4) + " рад");
+            myTextView.setText(responseString);
+
+            // прочитать состояние из файла и выдать его на экране
+            stalker = StalkerClass.getStalkerState(cntx);
+
+            updateStalkerInfo();
+
+            //progressBarLife.setProgress(Integer.decode(responseString.split(":")[1]));
+            //textViewStalkerRad.setText((Integer.decode(responseString.split(":")[1]) * 4) + " рад");
 
         }
 
