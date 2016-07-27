@@ -13,12 +13,18 @@ import java.io.Serializable;
  */
 public class StalkerClass implements Serializable {
     private String _name;
+
     private double _countRad = 0;
     private StatusLife _status = StatusLife.LIFE;
+    private double _resistCoef = 1;
 //    private Context cntx;
 
     public String get_name() {
         return _name;
+    }
+
+    public void set_countRad(double _countRad) {
+        this._countRad = _countRad;
     }
 
     public void set_name(String _name) {
@@ -35,10 +41,14 @@ public class StalkerClass implements Serializable {
     }
 
     public void add_rad(double pCount){
-        _countRad += pCount;
+        _countRad += pCount / _resistCoef;
         if (_countRad > 400)
             _countRad = 400;
         CheckStatus();
+    }
+
+    public void set_resistCoef(double pCoef){
+        _resistCoef = pCoef;
     }
 
     private void CheckStatus() {

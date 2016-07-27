@@ -3,19 +3,24 @@ package com.stalker.geiger.omen.geiger;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
 import com.google.gson.Gson;
+import com.stalker.geiger.omen.geiger.common.checkCmdCode;
 import com.stalker.geiger.omen.geiger.services.mainStalkerService;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
 
@@ -35,6 +40,8 @@ public class StalkerActivity extends AppCompatActivity {
 
     private MyStalkerReciever receiver;
     private IntentFilter filter;
+
+    private String cmdCode = "";
 
     @Override
     protected void onDestroy() {
@@ -92,8 +99,7 @@ public class StalkerActivity extends AppCompatActivity {
         if (isMyServiceRunning(mainStalkerService.class)){
             Log.d(TAG,"Service is running");
         }else {
-            Intent intent = new Intent(StalkerActivity.this, mainStalkerService.class);
-            startService(intent);
+            startService(new Intent(StalkerActivity.this, mainStalkerService.class));
         }
 
         updateStalkerInfo();
@@ -105,7 +111,7 @@ public class StalkerActivity extends AppCompatActivity {
         textViewStalkerName.setText(stalker.get_name());
         progressBarLife.setProgress(stalker.get_countRadForProgressbar());
         textViewStatusLife.setText(stalker.get_status(this));
-        textViewStalkerRad.setText(new DecimalFormat("000.00").format(stalker.get_countRad()) + " рад");
+        textViewStalkerRad.setText(new DecimalFormat(getString(R.string.RadFormat)).format(stalker.get_countRad()) + getString(R.string.MeasureRad));
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -120,8 +126,8 @@ public class StalkerActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuItem item3 = menu.add("Остановить сервис и сбросить настройки");
-        item3.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        MenuItem item = menu.add(R.string.StopService);
+        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
@@ -134,7 +140,63 @@ public class StalkerActivity extends AppCompatActivity {
                 return false;
             }
         });
+        MenuItem item1 = menu.add(R.string.EnterCode);
+        item1.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                inputSomeCode();
+                checkCode();
+                return false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void checkCode(){
+        switch (checkCmdCode.getCmdType(cmdCode)){
+            case SETRESIST:{
+                break;
+            }
+            case HEAL:{
+                stalker.set_countRad(0);
+                stalker.saveState(this);
+                break;
+            }
+            case DEAD:{
+                break;
+            }
+            case ILL:{
+                break;
+            }
+            case STOP:{
+                break;
+            }
+            case START:{
+                break;
+            }
+        }
+    }
+
+    private void inputSomeCode(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(StalkerActivity.this);
+        builder.setTitle(R.string.EnterCode);
+        final EditText input = new EditText(StalkerActivity.this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton(getString(R.string.Ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                cmdCode = input.getText().toString();
+            }
+        });
+        builder.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                cmdCode = "";
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 
     public class MyStalkerReciever extends BroadcastReceiver{
@@ -156,12 +218,7 @@ public class StalkerActivity extends AppCompatActivity {
 
             // прочитать состояние из файла и выдать его на экране
             stalker = StalkerClass.getStalkerState(cntx);
-
             updateStalkerInfo();
-
-            //progressBarLife.setProgress(Integer.decode(responseString.split(":")[1]));
-            //textViewStalkerRad.setText((Integer.decode(responseString.split(":")[1]) * 4) + " рад");
-
         }
 
 

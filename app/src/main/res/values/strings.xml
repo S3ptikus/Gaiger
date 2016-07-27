@@ -11,5 +11,13 @@
     <string name="statusIll">Облучен</string>
     <string name="statusRadSick">Лучевая болезнь</string>
     <string name="statusDead">Мертв</string>
+    <string name="EnterCode">Ввести код</string>
+    <string name="Ok">OK</string>
+    <string name="Cancel">Отмена</string>
+    <string name="StopService">Остановить сервис и сбросить настройки</string>
+    <string name="MeasureRad">" рад"</string>
+    <string name="RadFormat">000.00</string>
+    <string name="RadLevel">Уровень радиации</string>
+    <string name="RadHour">" рад/ч"</string>
 
 </resources>
