@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 
 /**
  * Created by omen on 19.07.2016.
@@ -15,9 +16,25 @@ public class StalkerClass implements Serializable {
     private String _name;
 
     private double _countRad = 0;
+
+    public StatusLife get_status() {
+        return _status;
+    }
     private StatusLife _status = StatusLife.LIFE;
     private double _resistCoef = 1;
-//    private Context cntx;
+
+    public int get_resistCoef() {
+        return (int) Math.ceil(_resistCoef * 100);
+    }
+
+    public void set_resistCoef(double pCoef){
+        if (pCoef > 1)
+            _resistCoef = 1;
+        else if (pCoef < 0)
+            _resistCoef = 0;
+        else
+            _resistCoef = pCoef;
+    }
 
     public String get_name() {
         return _name;
@@ -47,9 +64,7 @@ public class StalkerClass implements Serializable {
         CheckStatus();
     }
 
-    public void set_resistCoef(double pCoef){
-        _resistCoef = pCoef;
-    }
+
 
     private void CheckStatus() {
         // 10-20 чутка
@@ -59,12 +74,14 @@ public class StalkerClass implements Serializable {
             this.set_status(StatusLife.LIFE);
         }else if ((this._countRad > 20) && (this._countRad <= 150)) {
             this.set_status(StatusLife.ILL);
-        }else if ((this._countRad > 150) && (this._countRad <= 400)) {
+        }else if ((this._countRad > 150) && (this._countRad < 400)) {
             this.set_status(StatusLife.RADSIC);
         }else if (this._countRad >= 400){
             this.set_status(StatusLife.DEAD);
         }
     }
+
+
 
     public String get_status(Context pCntx) {
         switch (_status){

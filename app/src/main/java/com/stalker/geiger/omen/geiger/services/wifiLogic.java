@@ -18,16 +18,11 @@ public class wifiLogic {
 
     public wifiLogic(Context pCntx) {
         wifi = (WifiManager) pCntx.getSystemService(Context.WIFI_SERVICE);
-        // Check for wifi is disabled
-        if (wifi.isWifiEnabled() == false)
-        {
-            // If wifi disabled then enable it
-            //Toast.makeText(pCntx.getApplicationContext(), "wifi is disabled..making it enabled", Toast.LENGTH_LONG).show();
-            wifi.setWifiEnabled(true);
-        }
+        checkWiFiState();
     }
 
     public ScanResult getWifiZone(){
+        checkWiFiState();
         if (wifi.startScan()){
             for (ScanResult zone:wifi.getScanResults()) {
                 if (checkZone(zone)){
@@ -36,6 +31,11 @@ public class wifiLogic {
             }
         }
         return null;
+    }
+
+    private void checkWiFiState(){
+        if (wifi.isWifiEnabled() == false)
+            wifi.setWifiEnabled(true);
     }
 
     private boolean checkZone(ScanResult pZone){

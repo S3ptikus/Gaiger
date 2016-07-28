@@ -7,8 +7,10 @@ public class checkCmdCode {
     public static cmdCodeType getCmdType(String pCmd){
         if (pCmd.contains("heal"))
                 return cmdCodeType.HEAL;
-        return cmdCodeType.DEAD;
-
+        else if (pCmd.contains("res"))
+                return cmdCodeType.SETRESIST;
+        else
+            return cmdCodeType.DEAD;
     }
 
 }

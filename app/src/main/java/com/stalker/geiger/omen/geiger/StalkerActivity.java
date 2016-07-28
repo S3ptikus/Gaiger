@@ -36,12 +36,11 @@ public class StalkerActivity extends AppCompatActivity {
     TextView textViewStatusLife;
     TextView textViewRadCount;
     TextView textViewStalkerRad;
+    TextView textViewStalkerRadResist;
     ProgressBar progressBarLife;
 
     private MyStalkerReciever receiver;
     private IntentFilter filter;
-
-    private String cmdCode = "";
 
     @Override
     protected void onDestroy() {
@@ -78,6 +77,7 @@ public class StalkerActivity extends AppCompatActivity {
         textViewRadCount = (TextView) findViewById(R.id.textViewRadCount);
         progressBarLife = (ProgressBar) findViewById(R.id.lifeBar);
         textViewStalkerRad = (TextView) findViewById(R.id.countStalkerRad);
+        textViewStalkerRadResist = (TextView) findViewById(R.id.textViewRadResist);
 
         // Регистрируем ресивер
         filter = new IntentFilter(MyStalkerReciever.PROCESS_RESPONSE_COUNT_RAD);
@@ -109,6 +109,7 @@ public class StalkerActivity extends AppCompatActivity {
 
     public void updateStalkerInfo(){
         textViewStalkerName.setText(stalker.get_name());
+        textViewStalkerRadResist.setText(getString(R.string.coefResistNote) + stalker.get_resistCoef() + "%");
         progressBarLife.setProgress(stalker.get_countRadForProgressbar());
         textViewStatusLife.setText(stalker.get_status(this));
         textViewStalkerRad.setText(new DecimalFormat(getString(R.string.RadFormat)).format(stalker.get_countRad()) + getString(R.string.MeasureRad));
@@ -130,7 +131,6 @@ public class StalkerActivity extends AppCompatActivity {
         item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
                 SharedPreferences.Editor ed = sharedPref.edit();
                 ed.clear();
                 ed.commit();
@@ -145,36 +145,10 @@ public class StalkerActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 inputSomeCode();
-                checkCode();
                 return false;
             }
         });
         return super.onCreateOptionsMenu(menu);
-    }
-
-    private void checkCode(){
-        switch (checkCmdCode.getCmdType(cmdCode)){
-            case SETRESIST:{
-                break;
-            }
-            case HEAL:{
-                stalker.set_countRad(0);
-                stalker.saveState(this);
-                break;
-            }
-            case DEAD:{
-                break;
-            }
-            case ILL:{
-                break;
-            }
-            case STOP:{
-                break;
-            }
-            case START:{
-                break;
-            }
-        }
     }
 
     private void inputSomeCode(){
@@ -186,17 +160,23 @@ public class StalkerActivity extends AppCompatActivity {
         builder.setPositiveButton(getString(R.string.Ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                cmdCode = input.getText().toString();
+                // установить код в sharedPref
+                setCmdCode(input.getText().toString());
             }
         });
         builder.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                cmdCode = "";
                 dialog.cancel();
             }
         });
         builder.show();
+    }
+
+    private void setCmdCode(String pCode){
+        SharedPreferences.Editor ed = sharedPref.edit();
+        ed.putString(getString(R.string.cmdCodePrefKey), pCode);
+        ed.commit();
     }
 
     public class MyStalkerReciever extends BroadcastReceiver{

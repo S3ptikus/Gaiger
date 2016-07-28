@@ -18,7 +18,9 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 import com.stalker.geiger.omen.geiger.StalkerActivity;
+import com.stalker.geiger.omen.geiger.common.checkCmdCode;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
+import com.stalker.geiger.omen.geiger.stalker_classes.StatusLife;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,7 @@ public class mainStalkerService extends IntentService {
     private boolean isVibrate = false;
     public static final String RESPONSE_STRING_RAD_COUNT = "myResponseRadCount";
     private SharedPreferences sharedPref;
+    private String cmdCode = "";
 
     public mainStalkerService() {
         super("mainStalkerService");
@@ -101,20 +104,29 @@ public class mainStalkerService extends IntentService {
             try {
                 zone = wifiLogic.getWifiZone();
                 // добавление звука\вибрации при входе в зону
-                if (zone != null)
+                if (zone != null) {
                     if (!player.isPlaying())
                         player.start();
+                }
                 else
                     player.stop();
-                isVibrate = (zone != null);
 
                 getRadHour = wifiLogic.getRadHour(zone);
                 getRadHour = getRndRadCount(getRadHour);
                 // Добавляем кол-во радов сталкеру. За одну секунду
                 stalker.add_rad(getRadHour / 120);
+                // Проверим, есть ли служебный код
+                checkCode(sharedPref.getString(getString(R.string.cmdCodePrefKey),""));
+
                 stalker.saveState(this);
                 String formatRadString = new DecimalFormat(getString(R.string.RadFormat)).format(getRadHour);
-                setNotification(formatRadString);
+
+                // Если сталкер уже мертв
+                if (stalker.get_status() == StatusLife.DEAD) {
+                    setNotification(getString(R.string.notificationDead), true);
+                } else {
+                    setNotification(formatRadString, (zone != null));
+                }
                 // Отправляем в активити
                 broadcastIntent.putExtra(RESPONSE_STRING_RAD_COUNT, formatRadString);
                 sendBroadcast(broadcastIntent);
@@ -124,6 +136,41 @@ public class mainStalkerService extends IntentService {
                 Log.d(TAG,e.getMessage());
             }
         }
+    }
+    private void checkCode(String pCode){
+        if (pCode.isEmpty())
+            return;
+
+        switch (checkCmdCode.getCmdType(pCode)){
+            case SETRESIST:{
+                stalker.set_resistCoef(Double.parseDouble(pCode.split(":")[1]));
+                break;
+            }
+            case HEAL:{
+                stalker.set_countRad(0);
+                break;
+            }
+            case DEAD:{
+                stalker.set_countRad(400);
+                break;
+            }
+            case ILL:{
+                break;
+            }
+            case STOP:{
+                break;
+            }
+            case START:{
+                break;
+            }
+        }
+        removeCmdCode();
+    }
+
+    private void removeCmdCode(){
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.remove(getString(R.string.cmdCodePrefKey));
+        editor.commit();
     }
 
     private double getRndRadCount(double pCount){
@@ -135,7 +182,7 @@ public class mainStalkerService extends IntentService {
             return Math.abs(pCount - randomNum);
     }
 
-    private void setNotification(String pMsg){
+    private void setNotification(String pMsg, boolean pVibrate){
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_stalker_launcher)
@@ -143,7 +190,7 @@ public class mainStalkerService extends IntentService {
                         .setAutoCancel(true)
                         .setContentText(pMsg + getString(R.string.RadHour));
 
-        if (isVibrate){
+        if (pVibrate){
             builder.setVibrate(new long[]{100, 100, 100});
         }
 
