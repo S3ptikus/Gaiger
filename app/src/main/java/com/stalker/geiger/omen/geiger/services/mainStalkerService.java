@@ -76,6 +76,7 @@ public class mainStalkerService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        removeCmdCode();
         isRunning = false;
     }
 
@@ -173,30 +174,30 @@ public class mainStalkerService extends IntentService {
         nManager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    class serviceThread implements Runnable{
-        Context cntx;
-
-        public serviceThread(Context pCntx) {
-            super();
-            cntx = pCntx;
-        }
-
-        @Override
-        public void run() {
-            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
-            wifiLogic = new wifiLogic(cntx);
-            nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            String json = sharedPref.getString(getString(R.string.stalkerClass),"");
-            if (json != ""){
-                Gson g = new Gson();
-                stalker = g.fromJson(json, StalkerClass.class);
-                isRunning = true;
-                // запускаем главный таск
-                serviceTask();
-            } else {
-                isRunning = false;
-            }
-        }
-    }
+    //    class serviceThread implements Runnable{
+//        Context cntx;
+//
+//        public serviceThread(Context pCntx) {
+//            super();
+//            cntx = pCntx;
+//        }
+//
+//        @Override
+//        public void run() {
+//            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
+//            wifiLogic = new wifiLogic(cntx);
+//            nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//            String json = sharedPref.getString(getString(R.string.stalkerClass),"");
+//            if (json != ""){
+//                Gson g = new Gson();
+//                stalker = g.fromJson(json, StalkerClass.class);
+//                isRunning = true;
+//                // запускаем главный таск
+//                serviceTask();
+//            } else {
+//                isRunning = false;
+//            }
+//        }
+//    }
 
  }

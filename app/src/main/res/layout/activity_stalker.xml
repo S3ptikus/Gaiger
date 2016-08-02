@@ -133,7 +133,7 @@
                 android:layout_marginLeft="20sp"
                 android:layout_marginRight="20sp"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="рад/ч"
+                android:text="@string/RadHour"
                 android:id="@+id/textView"
                 android:gravity="center_vertical|right"
                 android:textColor="@color/material_grey_300"

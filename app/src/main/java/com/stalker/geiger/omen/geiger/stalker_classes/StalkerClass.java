@@ -42,7 +42,12 @@ public class StalkerClass implements Serializable {
     }
 
     public void set_countRad(double _countRad) {
-        this._countRad = _countRad;
+        if (_countRad > 400)
+            this._countRad = 400;
+        else if (_countRad < 0)
+            this._countRad = 0;
+        else
+            this._countRad = _countRad;
     }
 
     public void set_name(String _name) {
@@ -130,6 +135,8 @@ public class StalkerClass implements Serializable {
     }
 
     public void applyCmdCode(cmdCodeClass pCodeObj){
+        if (pCodeObj._type == null)
+            return;
         switch (pCodeObj._type){
             case SETRESIST:{
                 this.set_resistCoef(pCodeObj._value);
@@ -140,8 +147,11 @@ public class StalkerClass implements Serializable {
                 break;
             }
             case DEAD:{
-                this.set_countRad(pCodeObj._value);
+                this.set_countRad(400);
                 break;
+            }
+            default:{
+                return;
             }
         }
     }
