@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
+import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -64,8 +65,6 @@ public class StalkerClass implements Serializable {
         CheckStatus();
     }
 
-
-
     private void CheckStatus() {
         // 10-20 чутка
         // 150 - лучевая болезнь
@@ -80,8 +79,6 @@ public class StalkerClass implements Serializable {
             this.set_status(StatusLife.DEAD);
         }
     }
-
-
 
     public String get_status(Context pCntx) {
         switch (_status){
@@ -129,6 +126,23 @@ public class StalkerClass implements Serializable {
         } else {
             Gson g = new Gson();
             return g.fromJson(json, StalkerClass.class);
+        }
+    }
+
+    public void applyCmdCode(cmdCodeClass pCodeObj){
+        switch (pCodeObj._type){
+            case SETRESIST:{
+                this.set_resistCoef(pCodeObj._value);
+                break;
+            }
+            case SETRAD:{
+                this.set_countRad(pCodeObj._value);
+                break;
+            }
+            case DEAD:{
+                this.set_countRad(pCodeObj._value);
+                break;
+            }
         }
     }
 }

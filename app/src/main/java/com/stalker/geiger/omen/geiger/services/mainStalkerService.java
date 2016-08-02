@@ -7,10 +7,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -19,15 +16,12 @@ import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 import com.stalker.geiger.omen.geiger.StalkerActivity;
 import com.stalker.geiger.omen.geiger.common.checkCmdCode;
+import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
 import com.stalker.geiger.omen.geiger.stalker_classes.StatusLife;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Random;
 
 public class mainStalkerService extends IntentService {
@@ -137,33 +131,12 @@ public class mainStalkerService extends IntentService {
             }
         }
     }
+
     private void checkCode(String pCode){
         if (pCode.isEmpty())
             return;
 
-        switch (checkCmdCode.getCmdType(pCode)){
-            case SETRESIST:{
-                stalker.set_resistCoef(Double.parseDouble(pCode.split(":")[1]));
-                break;
-            }
-            case HEAL:{
-                stalker.set_countRad(0);
-                break;
-            }
-            case DEAD:{
-                stalker.set_countRad(400);
-                break;
-            }
-            case ILL:{
-                break;
-            }
-            case STOP:{
-                break;
-            }
-            case START:{
-                break;
-            }
-        }
+        stalker.applyCmdCode(checkCmdCode.getCmdObj(pCode));
         removeCmdCode();
     }
 
