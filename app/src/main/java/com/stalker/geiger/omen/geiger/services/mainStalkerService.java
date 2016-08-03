@@ -103,8 +103,11 @@ public class mainStalkerService extends IntentService {
                     if (!player.isPlaying())
                         player.start();
                 }
-                else
-                    player.stop();
+                else {
+                    if (player.isPlaying()) {
+                        player.pause();
+                    }
+                }
 
                 getRadHour = wifiLogic.getRadHour(zone);
                 getRadHour = getRndRadCount(getRadHour);

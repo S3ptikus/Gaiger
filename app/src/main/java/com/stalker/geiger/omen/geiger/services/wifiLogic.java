@@ -12,28 +12,38 @@ import android.widget.Toast;
 public class wifiLogic {
 
     private WifiManager wifi;
+    wifiApControl apControl;
     private Context cntx;
-    private static final double homeRad = 3;
+    private static final double homeRad = 0.5;
     private static final String TAG = wifiLogic.class.getSimpleName();
 
     public wifiLogic(Context pCntx) {
         wifi = (WifiManager) pCntx.getSystemService(Context.WIFI_SERVICE);
+        apControl = wifiApControl.getApControl(wifi);
         checkWiFiState();
     }
 
     public ScanResult getWifiZone(){
         checkWiFiState();
         if (wifi.startScan()){
-            for (ScanResult zone:wifi.getScanResults()) {
-                if (checkZone(zone)){
-                    return zone;
+            try {
+                for (ScanResult zone : wifi.getScanResults()) {
+                    if (checkZone(zone)) {
+                        return zone;
+                    }
                 }
+            }catch(NullPointerException e){
+                //Log.d(TAG, e.getMessage());
             }
         }
         return null;
     }
 
     private void checkWiFiState(){
+        if (apControl != null && apControl.isWifiApEnabled()) {
+                apControl.setWifiApEnabled(apControl.getWifiApConfiguration(), false);
+        }
+
         if (wifi.isWifiEnabled() == false)
             wifi.setWifiEnabled(true);
     }
@@ -75,7 +85,7 @@ public class wifiLogic {
                 return (getPowZone(pZone.SSID) * 0.1);
             }
         } else {
-            Log.d(TAG, "Home rad");
+            //Log.d(TAG, "Home rad");
             return homeRad;
         }
         return 0;

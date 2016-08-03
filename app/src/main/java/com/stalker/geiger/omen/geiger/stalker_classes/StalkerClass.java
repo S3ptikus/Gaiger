@@ -9,14 +9,16 @@ import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by omen on 19.07.2016.
  */
 public class StalkerClass implements Serializable {
     private String _name;
-
     private double _countRad = 0;
+    private ArrayList<String> _listCmdCodes;
 
     public StatusLife get_status() {
         return _status;
@@ -107,6 +109,8 @@ public class StalkerClass implements Serializable {
     public StalkerClass(String pName) {
         super();
         _name =  pName;
+        if (_listCmdCodes == null)
+            _listCmdCodes = new ArrayList<String>();
     }
 
     public String getJSON(){
@@ -137,6 +141,16 @@ public class StalkerClass implements Serializable {
     public void applyCmdCode(cmdCodeClass pCodeObj){
         if (pCodeObj._type == null)
             return;
+
+        if (_listCmdCodes == null) {
+            _listCmdCodes = new ArrayList<String>();
+        }
+
+        if (_listCmdCodes.contains(pCodeObj._code))
+            return;
+        else
+            _listCmdCodes.add(pCodeObj._code);
+
         switch (pCodeObj._type){
             case SETRESIST:{
                 this.set_resistCoef(pCodeObj._value);

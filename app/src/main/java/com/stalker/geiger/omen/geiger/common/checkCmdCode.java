@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  */
 public class checkCmdCode {
     public static cmdCodeClass getCmdObj(String pCmd){
-        return new cmdCodeClass(getCmdType(pCmd), getCmdValue(pCmd));
+        return new cmdCodeClass(pCmd, getCmdType(pCmd), getCmdValue(pCmd));
     }
 
     private static cmdCodeType getCmdType(String pCode){
@@ -17,7 +17,7 @@ public class checkCmdCode {
             return cmdCodeType.SETRAD;
 
         // RESCOEF
-        if (pCode.indexOf("&") < pCode.indexOf("$"))
+        if (pCode.indexOf("&") < pCode.indexOf("^"))
             return cmdCodeType.SETRESIST;
 
         // DEAD
