@@ -36,8 +36,10 @@ public class checkCmdCode {
             compareValue += m.group().toString();
         }
 
-        // если первый и второй символ 0, то второй меняем на точку
-        if ((compareValue.charAt(0) == '0') && (compareValue.charAt(1) == '0')) {
+        if (compareValue.length() == 0)
+            return -1;
+
+        if ((compareValue.contains("00")) &&(compareValue.charAt(0) == '0') && (compareValue.charAt(1) == '0')) {
             compareValue = compareValue.replaceFirst("00", "0.");
             try{
                 res = Double.parseDouble(compareValue);

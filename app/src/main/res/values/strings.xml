@@ -21,6 +21,6 @@
     <string name="RadHour">" рад/мин"</string>
     <string name="notificationDead">Мертв!</string>
     <string name="cmdCodePrefKey">cmdCode</string>
-    <string name="coefResistNote">"Поглащение радиации: "</string>
+    <string name="coefResistNote">"Восприимчивость: "</string>
 
 </resources>

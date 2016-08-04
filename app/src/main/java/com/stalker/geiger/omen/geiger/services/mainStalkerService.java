@@ -7,7 +7,10 @@ import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -33,6 +36,7 @@ public class mainStalkerService extends IntentService {
     private wifiLogic wifiLogic;
     private NotificationManager nManager;
     private MediaPlayer player;
+    private MediaPlayer deadPlayer;
     private final int NOTIFICATION_ID = 12345;
     NotificationCompat.Builder builder;
     private boolean isVibrate = false;
@@ -52,13 +56,24 @@ public class mainStalkerService extends IntentService {
         builder = new NotificationCompat.Builder(this);
         player = new MediaPlayer();
         try {
-
             AssetFileDescriptor descriptor = getAssets().openFd("Sound/soundCount.mp3");
             player.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
             descriptor.close();
             player.prepare();
             player.setLooping(true);
             player.setVolume(1f, 1f);
+        }catch (IOException e){
+            Log.d(TAG, e.getMessage());
+        }
+
+        deadPlayer = new MediaPlayer();
+        try {
+            AssetFileDescriptor descriptor = getAssets().openFd("Sound/phone-off-hook.mp3");
+            deadPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+            descriptor.close();
+            deadPlayer.prepare();
+            deadPlayer.setLooping(true);
+            deadPlayer.setVolume(1f, 1f);
         }catch (IOException e){
             Log.d(TAG, e.getMessage());
         }
@@ -124,8 +139,17 @@ public class mainStalkerService extends IntentService {
                 // Если сталкер уже мертв
                 if (stalker.get_status() == StatusLife.DEAD) {
                     setNotification(getString(R.string.notificationDead), true);
+                    if (player.isPlaying()) {
+                        player.pause();
+                    }
+                    if (!deadPlayer.isPlaying()) {
+                        deadPlayer.start();
+                    }
                 } else {
                     setNotification(formatRadString, (zone != null));
+                    if (deadPlayer.isPlaying()) {
+                        deadPlayer.pause();
+                    }
                 }
                 // Отправляем в активити
                 broadcastIntent.putExtra(RESPONSE_STRING_RAD_COUNT, formatRadString);
@@ -169,6 +193,8 @@ public class mainStalkerService extends IntentService {
 
         if (pVibrate){
             builder.setVibrate(new long[]{100, 100, 100});
+        }else {
+            builder.setVibrate(null);
         }
 
         Intent targetIntent = new Intent(this, StalkerActivity.class);

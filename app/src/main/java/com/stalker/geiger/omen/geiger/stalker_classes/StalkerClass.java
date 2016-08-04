@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
+import com.stalker.geiger.omen.geiger.common.cmdCodeType;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -25,6 +26,7 @@ public class StalkerClass implements Serializable {
     }
     private StatusLife _status = StatusLife.LIFE;
     private double _resistCoef = 1;
+    private boolean setIll = true;
 
     public int get_resistCoef() {
         return (int) Math.ceil(_resistCoef * 100);
@@ -78,10 +80,22 @@ public class StalkerClass implements Serializable {
         // 400 - смерть
         if (this._countRad <= 20){
             this.set_status(StatusLife.LIFE);
+            if (!setIll){
+                _resistCoef -=0.1;
+                setIll = true;
+            }
         }else if ((this._countRad > 20) && (this._countRad <= 150)) {
             this.set_status(StatusLife.ILL);
+            if (!setIll){
+                _resistCoef -=0.1;
+                setIll = true;
+            }
         }else if ((this._countRad > 150) && (this._countRad < 400)) {
             this.set_status(StatusLife.RADSIC);
+            if (setIll){
+                _resistCoef +=0.1;
+                setIll = false;
+            }
         }else if (this._countRad >= 400){
             this.set_status(StatusLife.DEAD);
         }
@@ -139,7 +153,7 @@ public class StalkerClass implements Serializable {
     }
 
     public void applyCmdCode(cmdCodeClass pCodeObj){
-        if (pCodeObj._type == null)
+        if (((pCodeObj._type == null) || (pCodeObj._value == -1)) && (pCodeObj._type != cmdCodeType.DEAD))
             return;
 
         if (_listCmdCodes == null) {
