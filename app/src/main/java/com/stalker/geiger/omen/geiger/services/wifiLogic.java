@@ -24,17 +24,19 @@ public class wifiLogic {
     }
 
     public ScanResult getWifiZone(){
-        checkWiFiState();
-        if (wifi.startScan()){
-            try {
-                for (ScanResult zone : wifi.getScanResults()) {
-                    if (checkZone(zone)) {
-                        return zone;
+        try {
+            checkWiFiState();
+            if (wifi.startScan()){
+
+                    for (ScanResult zone : wifi.getScanResults()) {
+                        if (checkZone(zone)) {
+                            return zone;
+                        }
                     }
-                }
-            }catch(NullPointerException e){
-                //Log.d(TAG, e.getMessage());
+
             }
+        }catch(NullPointerException e){
+            //Log.d(TAG, e.getMessage());
         }
         return null;
     }

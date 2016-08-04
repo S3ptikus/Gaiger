@@ -34,6 +34,7 @@ public class mainStalkerService extends IntentService {
     private NotificationManager nManager;
     private MediaPlayer player;
     private final int NOTIFICATION_ID = 12345;
+    NotificationCompat.Builder builder;
     private boolean isVibrate = false;
     public static final String RESPONSE_STRING_RAD_COUNT = "myResponseRadCount";
     private SharedPreferences sharedPref;
@@ -48,6 +49,7 @@ public class mainStalkerService extends IntentService {
         sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
         wifiLogic = new wifiLogic(this);
         nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        builder = new NotificationCompat.Builder(this);
         player = new MediaPlayer();
         try {
 
@@ -160,12 +162,10 @@ public class mainStalkerService extends IntentService {
     }
 
     private void setNotification(String pMsg, boolean pVibrate){
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_stalker_launcher)
-                        .setContentTitle(getString(R.string.RadLevel))
-                        .setAutoCancel(true)
-                        .setContentText(pMsg + getString(R.string.RadHour));
+        builder.setSmallIcon(R.mipmap.ic_stalker_launcher)
+                .setContentTitle(getString(R.string.RadLevel))
+                .setAutoCancel(true)
+                .setContentText(pMsg + getString(R.string.RadHour));
 
         if (pVibrate){
             builder.setVibrate(new long[]{100, 100, 100});
