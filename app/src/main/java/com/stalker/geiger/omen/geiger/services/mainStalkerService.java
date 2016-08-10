@@ -25,6 +25,7 @@ import com.stalker.geiger.omen.geiger.stalker_classes.StatusLife;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class mainStalkerService extends IntentService {
@@ -106,7 +107,7 @@ public class mainStalkerService extends IntentService {
 
     private void serviceTask(){
         Log.d(TAG, "mainTask");
-        ScanResult zone;
+        ArrayList<ScanResult> zones;
         double getRadHour;
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(StalkerActivity.MyStalkerReciever.PROCESS_RESPONSE_COUNT_RAD);
@@ -114,9 +115,9 @@ public class mainStalkerService extends IntentService {
 
         while (isRunning){
             try {
-                zone = wifiLogic.getWifiZone();
+                zones = wifiLogic.getWifiZone();
                 // добавление звука\вибрации при входе в зону
-                if (zone != null) {
+                if (!zones.isEmpty()) {
                     if (!player.isPlaying())
                         player.start();
                 }
@@ -126,7 +127,7 @@ public class mainStalkerService extends IntentService {
                     }
                 }
 
-                getRadHour = wifiLogic.getRadHour(zone);
+                getRadHour = wifiLogic.getRadHour(zones);
                 getRadHour = getRndRadCount(getRadHour);
                 // Добавляем кол-во радов сталкеру. За одну секунду
                 stalker.add_rad(getRadHour / 120);
@@ -146,7 +147,7 @@ public class mainStalkerService extends IntentService {
                         deadPlayer.start();
                     }
                 } else {
-                    setNotification(formatRadString, (zone != null));
+                    setNotification(formatRadString, (!zones.isEmpty()));
                     if (deadPlayer.isPlaying()) {
                         deadPlayer.pause();
                     }
@@ -202,31 +203,4 @@ public class mainStalkerService extends IntentService {
         builder.setContentIntent(contentIntent);
         nManager.notify(NOTIFICATION_ID, builder.build());
     }
-
-    //    class serviceThread implements Runnable{
-//        Context cntx;
-//
-//        public serviceThread(Context pCntx) {
-//            super();
-//            cntx = pCntx;
-//        }
-//
-//        @Override
-//        public void run() {
-//            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
-//            wifiLogic = new wifiLogic(cntx);
-//            nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//            String json = sharedPref.getString(getString(R.string.stalkerClass),"");
-//            if (json != ""){
-//                Gson g = new Gson();
-//                stalker = g.fromJson(json, StalkerClass.class);
-//                isRunning = true;
-//                // запускаем главный таск
-//                serviceTask();
-//            } else {
-//                isRunning = false;
-//            }
-//        }
-//    }
-
  }

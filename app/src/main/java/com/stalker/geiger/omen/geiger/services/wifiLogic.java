@@ -1,10 +1,14 @@
 package com.stalker.geiger.omen.geiger.services;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by omen on 21.07.2016.
@@ -23,22 +27,21 @@ public class wifiLogic {
         checkWiFiState();
     }
 
-    public ScanResult getWifiZone(){
+    public ArrayList<ScanResult> getWifiZone(){
+        ArrayList<ScanResult> resList = new ArrayList<ScanResult>();
         try {
             checkWiFiState();
             if (wifi.startScan()){
-
-                    for (ScanResult zone : wifi.getScanResults()) {
-                        if (checkZone(zone)) {
-                            return zone;
-                        }
+                for (ScanResult zone : wifi.getScanResults()) {
+                    if (checkZone(zone)) {
+                        resList.add(zone);
                     }
-
+                }
             }
         }catch(NullPointerException e){
-            //Log.d(TAG, e.getMessage());
+            return null;
         }
-        return null;
+        return resList;
     }
 
     private void checkWiFiState(){
@@ -51,11 +54,23 @@ public class wifiLogic {
     }
 
     private boolean checkZone(ScanResult pZone){
-        // если зона содержит RAD и POW значит это зона радиации
-        if (pZone.SSID.contains("RAD"))
-            return true;
-        else
+        // название зоны, это целое число, если нет, то это не она
+        long nameZone = Long.getLong(pZone.SSID, -1);
+        if (nameZone != -1){
+            char[] listNumber = String.valueOf(nameZone).substring(0,5).toCharArray();
+            int resCount = 0;
+            for (char item: listNumber) {
+                resCount += Integer.getInteger(String.valueOf(item));
+            }
+            // если первый 6 цифр в сумме дают 24, то это наша сеть
+            if (resCount == 24)
+                return true;
+            else
+                return false;
+
+        }
             return false;
+
     }
 
     public static int getLevel(ScanResult pZone){
@@ -68,29 +83,37 @@ public class wifiLogic {
     }
 
     public static int getPowZone(String pSSID){
+        Integer res = 0;
+        // TODO : get power from SSID zone
+
+
         return Integer.decode(pSSID.split(":")[1]);
     }
 
-    public static double getRadHour(ScanResult pZone){
-        if (pZone != null) {
-            int lvl = Math.abs(pZone.level);
-            Log.d(TAG, "fiend SSID:" + pZone.SSID + " Level:" + pZone.level);
-            if (lvl < 40) {
-                return (getPowZone(pZone.SSID) * 1);
-            } else if ((lvl >= 40) && (lvl <= 50)) {
-                return (getPowZone(pZone.SSID) * 0.9);
-            } else if ((lvl >= 50) && (lvl <= 60)) {
-                return (getPowZone(pZone.SSID) * 0.5);
-            } else if ((lvl >= 60) && (lvl <= 80)) {
-                return (getPowZone(pZone.SSID) * 0.3);
-            } else if ((lvl >= 90) && (lvl <= 100)) {
-                return (getPowZone(pZone.SSID) * 0.1);
-            }
-        } else {
-            //Log.d(TAG, "Home rad");
+    public static double getRadHour(ArrayList<ScanResult> pZones){
+        if (pZones.isEmpty()) {
             return homeRad;
+        } else {
+            int rad = 0;
+            int lvl, pwr;
+            for (ScanResult zone: pZones) {
+                lvl = Math.abs(zone.level);
+                pwr = getPowZone(zone.SSID);
+                Log.d(TAG, "fiend SSID:" + zone.SSID + " Level:" + zone.level);
+                if (lvl < 40) {
+                    rad += (pwr * 1);
+                } else if ((lvl >= 40) && (lvl <= 50)) {
+                    rad += (pwr * 0.9);
+                } else if ((lvl >= 50) && (lvl <= 60)) {
+                    rad += (pwr * 0.5);
+                } else if ((lvl >= 60) && (lvl <= 80)) {
+                    rad += (pwr * 0.3);
+                } else if ((lvl >= 90) && (lvl <= 100)) {
+                    rad += (pwr * 0.1);
+                }
+            }
+            return rad;
         }
-        return 0;
     }
 
 }
