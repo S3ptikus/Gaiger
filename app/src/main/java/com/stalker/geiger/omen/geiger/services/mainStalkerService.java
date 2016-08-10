@@ -116,16 +116,7 @@ public class mainStalkerService extends IntentService {
         while (isRunning){
             try {
                 zones = wifiLogic.getWifiZone();
-                // добавление звука\вибрации при входе в зону
-                if (!zones.isEmpty()) {
-                    if (!player.isPlaying())
-                        player.start();
-                }
-                else {
-                    if (player.isPlaying()) {
-                        player.pause();
-                    }
-                }
+
 
                 getRadHour = wifiLogic.getRadHour(zones);
                 getRadHour = getRndRadCount(getRadHour);
@@ -147,10 +138,19 @@ public class mainStalkerService extends IntentService {
                         deadPlayer.start();
                     }
                 } else {
-                    setNotification(formatRadString, (!zones.isEmpty()));
+                    if (!zones.isEmpty()) {
+                        if (!player.isPlaying())
+                            player.start();
+                    }
+                    else {
+                        if (player.isPlaying()) {
+                            player.pause();
+                        }
+                    }
                     if (deadPlayer.isPlaying()) {
                         deadPlayer.pause();
                     }
+                    setNotification(formatRadString, (!zones.isEmpty()));
                 }
                 // Отправляем в активити
                 broadcastIntent.putExtra(RESPONSE_STRING_RAD_COUNT, formatRadString);

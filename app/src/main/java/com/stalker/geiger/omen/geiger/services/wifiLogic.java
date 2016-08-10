@@ -55,22 +55,25 @@ public class wifiLogic {
 
     private boolean checkZone(ScanResult pZone){
         // название зоны, это целое число, если нет, то это не она
-        long nameZone = Long.getLong(pZone.SSID, -1);
+        Integer nameZone;
+        int resCount = 0;
+        try {
+            nameZone = Integer.parseInt(pZone.SSID);
+        }catch (NumberFormatException e){
+            nameZone = -1;
+        }
         if (nameZone != -1){
-            char[] listNumber = String.valueOf(nameZone).substring(0,5).toCharArray();
-            int resCount = 0;
+            char[] listNumber = String.valueOf(nameZone).substring(0,6).toCharArray();
             for (char item: listNumber) {
-                resCount += Integer.getInteger(String.valueOf(item));
+                resCount += Integer.parseInt(String.valueOf(item));
             }
             // если первый 6 цифр в сумме дают 24, то это наша сеть
             if (resCount == 24)
                 return true;
             else
                 return false;
-
         }
             return false;
-
     }
 
     public static int getLevel(ScanResult pZone){
@@ -83,11 +86,11 @@ public class wifiLogic {
     }
 
     public static int getPowZone(String pSSID){
-        Integer res = 0;
-        // TODO : get power from SSID zone
-
-
-        return Integer.decode(pSSID.split(":")[1]);
+        try {
+            return Integer.parseInt(pSSID.substring(6));
+        }catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public static double getRadHour(ArrayList<ScanResult> pZones){

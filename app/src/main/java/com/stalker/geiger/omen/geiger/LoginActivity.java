@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.IntegerRes;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,14 +26,31 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         String name = ((EditText) findViewById(R.id.editName)).getText().toString();
+        try {
+            if (!name.contains(":"))
+                return;
+
+            Integer checkCode = Integer.decode(name.split(":")[1]);
+            Integer res = 0;
+            for (char number : checkCode.toString().toCharArray()) {
+                res += Integer.decode(String.valueOf(number));
+            }
+            if (res != 13)
+                return;
+        }catch (NumberFormatException e){
+            return;
+        }catch (ArrayIndexOutOfBoundsException e){
+            return;
+        }
+
         sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
         SharedPreferences.Editor ed = sharedPref.edit();
-        ed.putString(getString(R.string.stalkerName), name);
+        ed.putString(getString(R.string.stalkerName), name.split(":")[0]);
         ed.commit();
 
         // Open Stalker Activity
         Intent mainIntent = new Intent(LoginActivity.this, StalkerActivity.class);
-        mainIntent.putExtra(getString(R.string.stalkerName),name);
+        mainIntent.putExtra(getString(R.string.stalkerName),name.split(":")[0]);
         startActivity(mainIntent);
         finish();
 
