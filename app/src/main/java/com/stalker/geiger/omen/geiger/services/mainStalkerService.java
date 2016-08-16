@@ -12,6 +12,7 @@ import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
+import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -36,8 +37,8 @@ public class mainStalkerService extends IntentService {
     static final int loopTime = 1000;
     private wifiLogic wifiLogic;
     private NotificationManager nManager;
-    private MediaPlayer player;
-    private MediaPlayer deadPlayer;
+    MediaPlayerExt playerLowCount, playerCount, playerDeath;
+
     private final int NOTIFICATION_ID = 12345;
     NotificationCompat.Builder builder;
     private boolean isVibrate = false;
@@ -55,29 +56,10 @@ public class mainStalkerService extends IntentService {
         wifiLogic = new wifiLogic(this);
         nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         builder = new NotificationCompat.Builder(this);
-        player = new MediaPlayer();
-        try {
-            AssetFileDescriptor descriptor = getAssets().openFd("Sound/soundCount.mp3");
-            player.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-            descriptor.close();
-            player.prepare();
-            player.setLooping(true);
-            player.setVolume(1f, 1f);
-        }catch (IOException e){
-            Log.d(TAG, e.getMessage());
-        }
 
-        deadPlayer = new MediaPlayer();
-        try {
-            AssetFileDescriptor descriptor = getAssets().openFd("Sound/phone-off-hook.mp3");
-            deadPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-            descriptor.close();
-            deadPlayer.prepare();
-            deadPlayer.setLooping(true);
-            deadPlayer.setVolume(1f, 1f);
-        }catch (IOException e){
-            Log.d(TAG, e.getMessage());
-        }
+        //playerLowCount = new MediaPlayerExt(getString(R.string.AssetsLowSndCount), true);
+        playerCount = new MediaPlayerExt(getString(R.string.AssetsSndCount), true);
+        playerDeath = new MediaPlayerExt(getString(R.string.AssetsSndDeath), false);
 
         String json = sharedPref.getString(getString(R.string.stalkerClass),"");
         if (json != ""){
@@ -100,8 +82,6 @@ public class mainStalkerService extends IntentService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //new Thread(new serviceThread(this)).run();
-        //return START_STICKY;
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -116,8 +96,6 @@ public class mainStalkerService extends IntentService {
         while (isRunning){
             try {
                 zones = wifiLogic.getWifiZone();
-
-
                 getRadHour = wifiLogic.getRadHour(zones);
                 getRadHour = getRndRadCount(getRadHour);
                 // Добавляем кол-во радов сталкеру. За одну секунду
@@ -130,25 +108,23 @@ public class mainStalkerService extends IntentService {
 
                 // Если сталкер уже мертв
                 if (stalker.get_status() == StatusLife.DEAD) {
-                    setNotification(getString(R.string.notificationDead), true);
-                    if (player.isPlaying()) {
-                        player.pause();
-                    }
-                    if (!deadPlayer.isPlaying()) {
-                        deadPlayer.start();
+                    setNotification(getString(R.string.notificationDead), false);
+                    // в любом случае останавливаем звук счетчика
+                    if (playerCount.isPlaying())
+                        playerCount.pause();
+                    if (!playerDeath.isPlaying()) {
+                        playerDeath.seekTo(0);
+                        playerDeath.start();
                     }
                 } else {
+                    playerDeath.pause();
                     if (!zones.isEmpty()) {
-                        if (!player.isPlaying())
-                            player.start();
+                        if (!playerCount.isPlaying())
+                            playerCount.start();
                     }
                     else {
-                        if (player.isPlaying()) {
-                            player.pause();
-                        }
-                    }
-                    if (deadPlayer.isPlaying()) {
-                        deadPlayer.pause();
+                        if (playerCount.isPlaying())
+                            playerCount.pause();
                     }
                     setNotification(formatRadString, (!zones.isEmpty()));
                 }
@@ -203,4 +179,34 @@ public class mainStalkerService extends IntentService {
         builder.setContentIntent(contentIntent);
         nManager.notify(NOTIFICATION_ID, builder.build());
     }
+
+    private class MediaPlayerExt extends MediaPlayer{
+        public MediaPlayerExt(String pAssetsUri, boolean pLoop) {
+            super();
+            try {
+                AssetFileDescriptor descriptor = getAssets().openFd(pAssetsUri);
+                this.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+                descriptor.close();
+                this.prepareAsync();
+                this.setLooping(pLoop);
+                this.setVolume(1f, 1f);
+            }catch (IOException e){
+                Log.d(TAG, e.getMessage());
+            }
+        }
+
+        @Override
+        public void start() throws IllegalStateException {
+            super.start();
+        }
+
+        @Override
+        public void setOnCompletionListener(OnCompletionListener listener) {
+            super.setOnCompletionListener(listener);
+            Log.d(TAG, "Complite media loop");
+
+
+        }
+    }
+
  }

@@ -127,19 +127,19 @@ public class StalkerActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuItem item = menu.add(R.string.StopService);
-        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                SharedPreferences.Editor ed = sharedPref.edit();
-                ed.clear();
-                ed.commit();
-
-                Intent intent = new Intent(StalkerActivity.this, mainStalkerService.class);
-                stopService(intent);
-                return false;
-            }
-        });
+//        MenuItem item = menu.add(R.string.StopService);
+//        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                SharedPreferences.Editor ed = sharedPref.edit();
+//                ed.clear();
+//                ed.commit();
+//
+//                Intent intent = new Intent(StalkerActivity.this, mainStalkerService.class);
+//                stopService(intent);
+//                return false;
+//            }
+//        });
         MenuItem item1 = menu.add(R.string.EnterCode);
         item1.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override

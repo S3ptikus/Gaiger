@@ -22,5 +22,8 @@
     <string name="notificationDead">Мертв!</string>
     <string name="cmdCodePrefKey">cmdCode</string>
     <string name="coefResistNote">"Восприимчивость: "</string>
+    <string name="AssetsSndCount">Sound/soundCount.mp3</string>
+    <string name="AssetsLowSndCount">Sound/lowsoundCount.mp3</string>
+    <string name="AssetsSndDeath">Sound/phone-off-hook.mp3</string>
 
 </resources>
