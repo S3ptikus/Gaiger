@@ -13,6 +13,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
+import android.provider.SyncStateContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -37,7 +38,8 @@ public class mainStalkerService extends IntentService {
     static final int loopTime = 1000;
     private wifiLogic wifiLogic;
     private NotificationManager nManager;
-    MediaPlayerExt playerLowCount, playerCount, playerDeath;
+    //MediaPlayerExt playerLowCount, playerCount, playerDeath;
+    private SoundManager soundManager;
 
     private final int NOTIFICATION_ID = 12345;
     NotificationCompat.Builder builder;
@@ -57,9 +59,9 @@ public class mainStalkerService extends IntentService {
         nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         builder = new NotificationCompat.Builder(this);
 
-        //playerLowCount = new MediaPlayerExt(getString(R.string.AssetsLowSndCount), true);
-        playerCount = new MediaPlayerExt(getString(R.string.AssetsSndCount), true);
-        playerDeath = new MediaPlayerExt(getString(R.string.AssetsSndDeath), false);
+//        playerLowCount = new MediaPlayerExt(getString(R.string.AssetsLowSndCount), true);
+//        playerCount = new MediaPlayerExt(getString(R.string.AssetsSndCount), true);
+//        playerDeath = new MediaPlayerExt(getString(R.string.AssetsSndDeath), false);
 
         String json = sharedPref.getString(getString(R.string.stalkerClass),"");
         if (json != ""){
@@ -83,6 +85,14 @@ public class mainStalkerService extends IntentService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    public SoundManager getSoundManager() {
+        if (soundManager == null) {
+            soundManager = new SoundManager();
+            Constants.initSoundManager(this, soundManager);
+        }
+        return soundManager;
     }
 
     private void serviceTask(){
@@ -109,22 +119,29 @@ public class mainStalkerService extends IntentService {
                 // Если сталкер уже мертв
                 if (stalker.get_status() == StatusLife.DEAD) {
                     setNotification(getString(R.string.notificationDead), false);
+                    getSoundManager().playSound(Constants.SOUND_DEAD);
+
                     // в любом случае останавливаем звук счетчика
-                    if (playerCount.isPlaying())
-                        playerCount.pause();
-                    if (!playerDeath.isPlaying()) {
-                        playerDeath.seekTo(0);
-                        playerDeath.start();
-                    }
+//                    if (playerCount.isPlaying())
+//                        playerCount.pause();
+//                    if (!playerDeath.isPlaying()) {
+//                        playerDeath.seekTo(0);
+//                        playerDeath.start();
+//                    }
                 } else {
-                    playerDeath.pause();
+                    //playerDeath.pause();
                     if (!zones.isEmpty()) {
-                        if (!playerCount.isPlaying())
-                            playerCount.start();
+                        if (getRadHour < 20)
+                            getSoundManager().playSound(Constants.SOUND_LOW_COUNT);
+                        else
+                            getSoundManager().playSound(Constants.SOUND_HIGH_COUNT);
+//                        if (!playerCount.isPlaying())
+//                            playerCount.start();
                     }
                     else {
-                        if (playerCount.isPlaying())
-                            playerCount.pause();
+                        getSoundManager().pauseSound();
+//                        if (playerCount.isPlaying())
+//                            playerCount.pause();
                     }
                     setNotification(formatRadString, (!zones.isEmpty()));
                 }
