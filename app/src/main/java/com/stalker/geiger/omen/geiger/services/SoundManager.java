@@ -11,6 +11,9 @@ import android.util.SparseIntArray;
 import com.stalker.geiger.omen.geiger.R;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
 
 /**
  * Created by p.yurkin on 17.08.16.
@@ -19,6 +22,8 @@ public class SoundManager {
     private String TAG = this.getClass().getSimpleName();
     private int curPlay;
     private SoundPool mSoundPool;
+    private boolean isPlay = false;
+    private HashMap<Integer, Integer> mapSounds;
 
     private SparseIntArray mSoundPoolMap = new SparseIntArray();
 
@@ -29,6 +34,7 @@ public class SoundManager {
 
     public SoundManager() {
         mSoundPool = new SoundPool(MAX_STREAMS, AudioManager.STREAM_MUSIC, 0);
+        mapSounds = new HashMap<Integer, Integer>();
     }
 
     /**
@@ -62,13 +68,24 @@ public class SoundManager {
             return;
         }
 
-        final int soundId = mSoundPool.play(mSoundPoolMap.get(soundID), 1, 1, 1, -1, 1f);
-        curPlay = soundId;
-        scheduleSoundStop(soundId);
+        if(soundID != curPlay) {
+            isPlay = false;
+            if (mapSounds.get(curPlay) != null)
+                mSoundPool.stop(mapSounds.get(curPlay));
+        }
+
+        if (!isPlay) {
+            final int soundId = mSoundPool.play(mSoundPoolMap.get(soundID), 1, 1, 1, -1, 1f);
+            Log.d(TAG, "Start_sound" + soundID);
+            mapSounds.put(soundID, soundId);
+            curPlay = soundID;
+            isPlay = true;
+        }
     }
 
-    public void pauseSound(){
-        mSoundPool.pause(curPlay);
+    public void stopSound(){
+        if (mapSounds.containsKey(curPlay))
+            mSoundPool.stop(mapSounds.get(curPlay));
     }
 
     /**

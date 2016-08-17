@@ -28,7 +28,6 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
         <activity android:name=".StalkerActivity"
-                  android:theme="@style/Theme.AppCompat.NoActionBar"
                   android:screenOrientation="portrait"/>
 
         <service

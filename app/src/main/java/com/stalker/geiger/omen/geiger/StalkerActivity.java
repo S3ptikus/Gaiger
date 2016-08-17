@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 
 import com.google.gson.Gson;
+import com.stalker.geiger.omen.geiger.common.SharedUtils;
 import com.stalker.geiger.omen.geiger.common.checkCmdCode;
 import com.stalker.geiger.omen.geiger.services.mainStalkerService;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
@@ -30,7 +31,7 @@ public class StalkerActivity extends AppCompatActivity {
 
     private StalkerClass stalker;
     private String TAG = StalkerActivity.class.getSimpleName();
-    private SharedPreferences sharedPref;
+    private SharedUtils sharedUtils;
 
     TextView textViewStalkerName;
     TextView textViewStatusLife;
@@ -69,7 +70,7 @@ public class StalkerActivity extends AppCompatActivity {
         // test
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stalker);
-        sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
+        sharedUtils = new SharedUtils(this);
 
         // Получаем компоненты
         textViewStalkerName = (TextView) findViewById(R.id.textViewStalkerName);
@@ -85,7 +86,7 @@ public class StalkerActivity extends AppCompatActivity {
         receiver = new MyStalkerReciever(this);
         registerReceiver(receiver, filter);
 
-        String json = sharedPref.getString(getString(R.string.stalkerClass),"");
+        String json = sharedUtils.getString(getString(R.string.stalkerClass));
         // если первый раз, то класса не будет
         if (json == ""){
             String name = getIntent().getStringExtra(getString(R.string.stalkerName));
@@ -104,7 +105,7 @@ public class StalkerActivity extends AppCompatActivity {
 
         updateStalkerInfo();
         // Сохраняем состояние объекта
-        stalker.saveState(this);
+        sharedUtils.saveState(stalker);
     }
 
     public void updateStalkerInfo(){
@@ -127,19 +128,16 @@ public class StalkerActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuItem item = menu.add(R.string.StopService);
-//        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-//            @Override
-//            public boolean onMenuItemClick(MenuItem item) {
-//                SharedPreferences.Editor ed = sharedPref.edit();
-//                ed.clear();
-//                ed.commit();
-//
-//                Intent intent = new Intent(StalkerActivity.this, mainStalkerService.class);
-//                stopService(intent);
-//                return false;
-//            }
-//        });
+        MenuItem item = menu.add(R.string.StopService);
+        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                sharedUtils.clear();
+                Intent intent = new Intent(StalkerActivity.this, mainStalkerService.class);
+                stopService(intent);
+                return false;
+            }
+        });
         MenuItem item1 = menu.add(R.string.EnterCode);
         item1.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -161,7 +159,7 @@ public class StalkerActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // установить код в sharedPref
-                setCmdCode(input.getText().toString());
+                sharedUtils.setCmdCode(input.getText().toString());
             }
         });
         builder.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
@@ -171,12 +169,6 @@ public class StalkerActivity extends AppCompatActivity {
             }
         });
         builder.show();
-    }
-
-    private void setCmdCode(String pCode){
-        SharedPreferences.Editor ed = sharedPref.edit();
-        ed.putString(getString(R.string.cmdCodePrefKey), pCode);
-        ed.commit();
     }
 
     public class MyStalkerReciever extends BroadcastReceiver{
@@ -197,7 +189,7 @@ public class StalkerActivity extends AppCompatActivity {
             myTextView.setText(responseString);
 
             // прочитать состояние из файла и выдать его на экране
-            stalker = StalkerClass.getStalkerState(cntx);
+            stalker = sharedUtils.getStalkerState();
             updateStalkerInfo();
         }
 

@@ -2,9 +2,11 @@ package com.stalker.geiger.omen.geiger.stalker_classes;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
+import com.stalker.geiger.omen.geiger.common.SharedUtils;
 import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
 import com.stalker.geiger.omen.geiger.common.cmdCodeType;
 
@@ -131,25 +133,6 @@ public class StalkerClass implements Serializable {
         Gson g = new Gson();
         String res = g.toJson(this);
         return res;
-    }
-
-    public void saveState(Context pCntx){
-        SharedPreferences sharedPref = pCntx.getSharedPreferences(pCntx.getString(R.string.sharedPrefFileName), pCntx.MODE_PRIVATE);
-        SharedPreferences.Editor ed = sharedPref.edit();
-        ed.putString(pCntx.getString(R.string.stalkerClass), this.getJSON());
-        ed.commit();
-    }
-
-    public static StalkerClass getStalkerState(Context pCntx){
-        SharedPreferences sharedPref = pCntx.getSharedPreferences(pCntx.getString(R.string.sharedPrefFileName), pCntx.MODE_PRIVATE);
-        String json = sharedPref.getString(pCntx.getString(R.string.stalkerClass),"");
-        // если первый раз, то класса не будет
-        if (json == ""){
-            return null;
-        } else {
-            Gson g = new Gson();
-            return g.fromJson(json, StalkerClass.class);
-        }
     }
 
     public void applyCmdCode(cmdCodeClass pCodeObj){

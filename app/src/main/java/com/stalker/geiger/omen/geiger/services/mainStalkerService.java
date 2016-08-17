@@ -20,6 +20,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 import com.stalker.geiger.omen.geiger.StalkerActivity;
+import com.stalker.geiger.omen.geiger.common.SharedUtils;
 import com.stalker.geiger.omen.geiger.common.checkCmdCode;
 import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
@@ -38,14 +39,13 @@ public class mainStalkerService extends IntentService {
     static final int loopTime = 1000;
     private wifiLogic wifiLogic;
     private NotificationManager nManager;
-    //MediaPlayerExt playerLowCount, playerCount, playerDeath;
-    private SoundManager soundManager;
+    SoundManager soundManager;
+    private SharedUtils sharedUtils;
 
     private final int NOTIFICATION_ID = 12345;
     NotificationCompat.Builder builder;
     private boolean isVibrate = false;
     public static final String RESPONSE_STRING_RAD_COUNT = "myResponseRadCount";
-    private SharedPreferences sharedPref;
     private String cmdCode = "";
 
     public mainStalkerService() {
@@ -54,16 +54,12 @@ public class mainStalkerService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        sharedPref = getSharedPreferences(getString(R.string.sharedPrefFileName), MODE_PRIVATE);
         wifiLogic = new wifiLogic(this);
         nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         builder = new NotificationCompat.Builder(this);
+        sharedUtils = new SharedUtils(this);
 
-//        playerLowCount = new MediaPlayerExt(getString(R.string.AssetsLowSndCount), true);
-//        playerCount = new MediaPlayerExt(getString(R.string.AssetsSndCount), true);
-//        playerDeath = new MediaPlayerExt(getString(R.string.AssetsSndDeath), false);
-
-        String json = sharedPref.getString(getString(R.string.stalkerClass),"");
+        String json = sharedUtils.getString(getString(R.string.stalkerClass));
         if (json != ""){
             Gson g = new Gson();
             stalker = g.fromJson(json, StalkerClass.class);
@@ -78,7 +74,7 @@ public class mainStalkerService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        removeCmdCode();
+        sharedUtils.removeCmdCode();
         isRunning = false;
     }
 
@@ -111,37 +107,24 @@ public class mainStalkerService extends IntentService {
                 // Добавляем кол-во радов сталкеру. За одну секунду
                 stalker.add_rad(getRadHour / 120);
                 // Проверим, есть ли служебный код
-                checkCode(sharedPref.getString(getString(R.string.cmdCodePrefKey),""));
+                checkCode(sharedUtils.getString(getString(R.string.cmdCodePrefKey)));
 
-                stalker.saveState(this);
+                sharedUtils.saveState(stalker);
                 String formatRadString = new DecimalFormat(getString(R.string.RadFormat)).format(getRadHour);
 
                 // Если сталкер уже мертв
                 if (stalker.get_status() == StatusLife.DEAD) {
                     setNotification(getString(R.string.notificationDead), false);
                     getSoundManager().playSound(Constants.SOUND_DEAD);
-
-                    // в любом случае останавливаем звук счетчика
-//                    if (playerCount.isPlaying())
-//                        playerCount.pause();
-//                    if (!playerDeath.isPlaying()) {
-//                        playerDeath.seekTo(0);
-//                        playerDeath.start();
-//                    }
                 } else {
-                    //playerDeath.pause();
                     if (!zones.isEmpty()) {
                         if (getRadHour < 20)
                             getSoundManager().playSound(Constants.SOUND_LOW_COUNT);
                         else
                             getSoundManager().playSound(Constants.SOUND_HIGH_COUNT);
-//                        if (!playerCount.isPlaying())
-//                            playerCount.start();
                     }
                     else {
-                        getSoundManager().pauseSound();
-//                        if (playerCount.isPlaying())
-//                            playerCount.pause();
+                        getSoundManager().stopSound();
                     }
                     setNotification(formatRadString, (!zones.isEmpty()));
                 }
@@ -161,13 +144,7 @@ public class mainStalkerService extends IntentService {
             return;
 
         stalker.applyCmdCode(checkCmdCode.getCmdObj(pCode));
-        removeCmdCode();
-    }
-
-    private void removeCmdCode(){
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.remove(getString(R.string.cmdCodePrefKey));
-        editor.commit();
+        sharedUtils.removeCmdCode();
     }
 
     private double getRndRadCount(double pCount){
