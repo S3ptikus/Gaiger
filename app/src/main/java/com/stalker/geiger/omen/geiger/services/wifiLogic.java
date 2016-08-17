@@ -62,7 +62,7 @@ public class wifiLogic {
         }catch (NumberFormatException e){
             nameZone = -1;
         }
-        if (nameZone != -1){
+        if ((nameZone != -1) && (nameZone.toString().length() > 6)){
             char[] listNumber = String.valueOf(nameZone).substring(0,6).toCharArray();
             for (char item: listNumber) {
                 resCount += Integer.parseInt(String.valueOf(item));
@@ -108,10 +108,8 @@ public class wifiLogic {
                 } else if ((lvl >= 40) && (lvl <= 50)) {
                     rad += (pwr * 0.9);
                 } else if ((lvl >= 50) && (lvl <= 60)) {
-                    rad += (pwr * 0.5);
-                } else if ((lvl >= 60) && (lvl <= 80)) {
-                    rad += (pwr * 0.3);
-                } else if ((lvl >= 90) && (lvl <= 100)) {
+                    rad += (pwr * 0.8);
+                } else if ((lvl >= 60) && (lvl <= 100)) {
                     rad += (pwr * 0.1);
                 }
             }
