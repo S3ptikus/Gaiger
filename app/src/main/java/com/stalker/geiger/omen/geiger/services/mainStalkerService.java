@@ -5,28 +5,19 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.AssetFileDescriptor;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.net.wifi.ScanResult;
-import android.os.Handler;
-import android.provider.SyncStateContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.stalker.geiger.omen.geiger.R;
 import com.stalker.geiger.omen.geiger.StalkerActivity;
+import com.stalker.geiger.omen.geiger.common.MediaPlayerExt;
 import com.stalker.geiger.omen.geiger.common.SharedUtils;
 import com.stalker.geiger.omen.geiger.common.checkCmdCode;
-import com.stalker.geiger.omen.geiger.common.cmdCodeClass;
 import com.stalker.geiger.omen.geiger.stalker_classes.StalkerClass;
 import com.stalker.geiger.omen.geiger.stalker_classes.StatusLife;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
@@ -39,14 +30,12 @@ public class mainStalkerService extends IntentService {
     static final int loopTime = 1000;
     private wifiLogic wifiLogic;
     private NotificationManager nManager;
-    SoundManager soundManager;
+    MediaPlayerExt mediaPlayerExt;
     private SharedUtils sharedUtils;
 
     private final int NOTIFICATION_ID = 12345;
     NotificationCompat.Builder builder;
-    private boolean isVibrate = false;
     public static final String RESPONSE_STRING_RAD_COUNT = "myResponseRadCount";
-    private String cmdCode = "";
 
     public mainStalkerService() {
         super("mainStalkerService");
@@ -83,12 +72,12 @@ public class mainStalkerService extends IntentService {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    public SoundManager getSoundManager() {
-        if (soundManager == null) {
-            soundManager = new SoundManager();
-            Constants.initSoundManager(this, soundManager);
+    public MediaPlayerExt getMediaPlayerExt(){
+        if (mediaPlayerExt == null){
+            mediaPlayerExt = new MediaPlayerExt(this);
+            Constants.initMediaPlayerExt(this, mediaPlayerExt);
         }
-        return soundManager;
+        return mediaPlayerExt;
     }
 
     private void serviceTask(){
@@ -115,18 +104,18 @@ public class mainStalkerService extends IntentService {
                 // Если сталкер уже мертв
                 if (stalker.get_status() == StatusLife.DEAD) {
                     setNotification(getString(R.string.notificationDead), false);
-                    getSoundManager().playSound(Constants.SOUND_DEAD);
+                    getMediaPlayerExt().playSound(Constants.SOUND_DEAD);
                 } else {
                     if (!zones.isEmpty()) {
                         if (getRadHour < 20)
-                            getSoundManager().playSound(Constants.SOUND_LOW_COUNT);
+                            getMediaPlayerExt().playSound(Constants.SOUND_LOW_COUNT);
                         else
-                            getSoundManager().playSound(Constants.SOUND_HIGH_COUNT);
+                            getMediaPlayerExt().playSound(Constants.SOUND_HIGH_COUNT);
                     }
                     else {
-                        getSoundManager().stopSound();
+                        getMediaPlayerExt().pause();
                     }
-                    setNotification(formatRadString, (!zones.isEmpty()));
+                    setNotification(formatRadString + getString(R.string.RadHour), (!zones.isEmpty()));
                 }
                 // Отправляем в активити
                 broadcastIntent.putExtra(RESPONSE_STRING_RAD_COUNT, formatRadString);
@@ -160,7 +149,7 @@ public class mainStalkerService extends IntentService {
         builder.setSmallIcon(R.mipmap.ic_stalker_launcher)
                 .setContentTitle(getString(R.string.RadLevel))
                 .setAutoCancel(true)
-                .setContentText(pMsg + getString(R.string.RadHour));
+                .setContentText(pMsg);
 
         if (pVibrate){
             builder.setVibrate(new long[]{100, 100, 100});
@@ -173,34 +162,4 @@ public class mainStalkerService extends IntentService {
         builder.setContentIntent(contentIntent);
         nManager.notify(NOTIFICATION_ID, builder.build());
     }
-
-    private class MediaPlayerExt extends MediaPlayer{
-        public MediaPlayerExt(String pAssetsUri, boolean pLoop) {
-            super();
-            try {
-                AssetFileDescriptor descriptor = getAssets().openFd(pAssetsUri);
-                this.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-                descriptor.close();
-                this.prepareAsync();
-                this.setLooping(pLoop);
-                this.setVolume(1f, 1f);
-            }catch (IOException e){
-                Log.d(TAG, e.getMessage());
-            }
-        }
-
-        @Override
-        public void start() throws IllegalStateException {
-            super.start();
-        }
-
-        @Override
-        public void setOnCompletionListener(OnCompletionListener listener) {
-            super.setOnCompletionListener(listener);
-            Log.d(TAG, "Complite media loop");
-
-
-        }
-    }
-
  }
