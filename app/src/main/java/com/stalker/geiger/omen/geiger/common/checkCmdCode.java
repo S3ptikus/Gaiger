@@ -6,22 +6,22 @@ import java.util.regex.Pattern;
 /**
  * Created by omen on 28.07.2016.
  */
-public class checkCmdCode {
+public class checkCmdCode  {
     public static cmdCodeClass getCmdObj(String pCmd){
         return new cmdCodeClass(pCmd, getCmdType(pCmd), getCmdValue(pCmd));
     }
 
     private static cmdCodeType getCmdType(String pCode){
         // Heal
-        if (pCode.indexOf("#") < pCode.indexOf("@"))
+        if ((pCode.contains("#") && pCode.contains("@")) && (pCode.indexOf("#") < pCode.indexOf("@")))
             return cmdCodeType.SETRAD;
 
         // RESCOEF
-        if (pCode.indexOf("&") < pCode.indexOf("^"))
+        if ((pCode.contains("&") && pCode.contains("^")) && (pCode.indexOf("&") < pCode.indexOf("^")))
             return cmdCodeType.SETRESIST;
 
         // DEAD
-        if (pCode.indexOf("*") < pCode.indexOf("("))
+        if ((pCode.contains("*") && pCode.contains("(")) && (pCode.indexOf("*") < pCode.indexOf("(")))
             return cmdCodeType.DEAD;
 
         return null;
