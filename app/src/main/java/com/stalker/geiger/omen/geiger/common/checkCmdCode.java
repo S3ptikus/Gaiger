@@ -13,17 +13,16 @@ public class checkCmdCode {
 
     private static cmdCodeType getCmdType(String pCode){
         // Heal
-        if (pCode.indexOf("#") < pCode.indexOf("@"))
+        if ((pCode.contains("#") && (pCode.contains("@"))) && (pCode.indexOf("#") < pCode.indexOf("@")))
             return cmdCodeType.SETRAD;
 
         // RESCOEF
-        if (pCode.indexOf("&") < pCode.indexOf("^"))
+        if ((pCode.contains("&") && (pCode.contains("^"))) && (pCode.indexOf("&") < pCode.indexOf("^")))
             return cmdCodeType.SETRESIST;
 
         // DEAD
-        if (pCode.indexOf("*") < pCode.indexOf("("))
+        if ((pCode.contains("*") && (pCode.contains("("))) && (pCode.indexOf("*") < pCode.indexOf("(")))
             return cmdCodeType.DEAD;
-
         return null;
     }
 

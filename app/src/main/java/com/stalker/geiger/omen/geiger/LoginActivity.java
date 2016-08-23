@@ -35,7 +35,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
             for (char number : checkCode.toString().toCharArray()) {
                 res += Integer.decode(String.valueOf(number));
             }
-            if (res != 13)
+            if (res != 26)
                 return;
         }catch (NumberFormatException e){
             return;

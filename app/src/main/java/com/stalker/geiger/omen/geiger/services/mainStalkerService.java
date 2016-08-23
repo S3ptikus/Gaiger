@@ -113,7 +113,8 @@ public class mainStalkerService extends IntentService {
                             getMediaPlayerExt().playSound(Constants.SOUND_HIGH_COUNT);
                     }
                     else {
-                        getMediaPlayerExt().pause();
+                        if (getMediaPlayerExt().isPlaying())
+                            getMediaPlayerExt().pause();
                     }
                     setNotification(formatRadString + getString(R.string.RadHour), (!zones.isEmpty()));
                 }

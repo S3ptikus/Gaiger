@@ -106,10 +106,12 @@ public class wifiLogic {
                 if (lvl < 40) {
                     rad += (pwr * 1);
                 } else if ((lvl >= 40) && (lvl <= 50)) {
-                    rad += (pwr * 0.9);
+                    rad += (pwr * 1);
                 } else if ((lvl >= 50) && (lvl <= 60)) {
-                    rad += (pwr * 0.8);
-                } else if ((lvl >= 60) && (lvl <= 100)) {
+                    rad += (pwr * 0.9);
+                } else if ((lvl >= 60) && (lvl <= 75)) {
+                    rad += (pwr * 0.75);
+                } else {
                     rad += (pwr * 0.1);
                 }
             }
