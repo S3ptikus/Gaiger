@@ -70,7 +70,7 @@ public class StalkerClass implements Serializable {
     }
 
     public void add_rad(double pCount){
-        _countRad += pCount / _resistCoef;
+        _countRad += pCount * _resistCoef;
         if (_countRad > 400)
             _countRad = 400;
         CheckStatus();
